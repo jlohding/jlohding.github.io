@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../styles.css">
+    <script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}};</script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>Jerry Loh</title>
+</head>
+
+<body>
+    <header>
+        <h1><a href = "../index.html">Jerry Loh</a></h1>
+    </header>
+    <h2>Some mathematical intuition for centering the PCA data matrix</h2>
+    <p>
+        In general, the first step of 
+        <a href="https://en.wikipedia.org/wiki/Principal_component_analysis">Principal Component Analysis (PCA)</a>
+        is to standardise the input data matrix such that each feature has mean zero and variance 1. Representing each feature by 
+        a random variable $ X_i $, we can express this transformation as:
+        $$ T: X_i \mapsto \frac{X_i - E(X_i)}{\sigma_{X_i}} $$  
+    </p>
+    <p>
+        Recently, I've been wondering how integral this transformation (or the lack of) is to the algorithm itself. I've 
+        come up with some ideas I thought were worth putting down in words.
+    </p>
+    <p>
+        Suppose we have a linear system derived from some $ m \times n $ data matrix:
+        $$ 
+        \begin{bmatrix}
+            a_{11}X_{1} + a_{12}X_{2} + \dots + a_{1n}X_{n} = W_{1} \\
+            a_{21}X_{1} + a_{22}X_{2} + \dots + a_{2n}X_{n} = W_{2} \\
+            \vdots \\
+            a_{m1}X_{1} + a_{m2}X_{2} + \dots + a_{mn}X_{n} = W_{m} \\
+        \end{bmatrix}
+        $$
+        where $ X_{i} $ are independent random variables representing feature $ i $ with coefficients $ a_{ij} $,
+        and $ W_{i} $ is the linear combination of terms for each row. (So $ W_i $ is also a random variable).
+    </p>
+    <p>
+        Consider the covariance between $ W_i $ and $ W_j $ for $ i \neq j $
+        $$
+        Cov(W_i, W_j) = \sum_{k=1}^{n} \sum_{v=1}^{n} a_{ik} a_{jv} Cov(X_k, X_j) \: \mbox{ (by linearity) }
+        $$
+    </p>
+    <p>
+        Now, consider what happens to this expression when we impose the condition that $ (E[X_i] = 0) \land (Var(X_i) = 1) $ 
+        (or in other words, we do normalisation on the data matrix for mean 0, variance 1). 
+        $$
+        \begin{align}
+            &E[X_i] = 0 \: \forall i \implies E[W_k] = \sum_{j=1}^{n} a_{kj} E[X_j] = 0 \\
+            &Var(X_i) = 1 \: \forall i \implies Var(W_k) = \sum_{j=1}^{n} a_{kj}^2 Var(X_j) = \sum_{j=1}^{n} a_{kj}^2 \\
+            &Cov(X_i, X_i) = Var(X_i) = 1 \\
+            &Cov(X_i, X_j) = 0 \: \forall i \neq j 
+        \end{align}
+        $$
+        which means that:
+        $$ 
+        \begin{align}
+            Cov(W_i, W_j) &= \sum_{k=1}^{n} \sum_{v=1}^{n} a_{ik} a_{jv} Cov(X_k, X_v) \\
+            &= \sum_{k \neq v}^{n} \sum a_{ik} a_{jv} Cov(X_k, X_v) + \sum_{k=1}^{n} a_{ik} a_{jk} Cov(X_k, X_k) \\
+            &= \sum_{k \neq v}^{n} \sum a_{ik} a_{jv} (0) + \sum_{k=1}^{n} a_{ik} a_{jk} (1) \\
+            &= \sum_{k=1}^{n} a_{ik} a_{jk} \\
+        \end{align}
+        $$
+    </p>
+    <p>
+        Then we realise that this last expression is precisely the $(i,j)$-entry of the matrix multiplication $ AA^{T}$.
+        Let the entries of matrix $A$ be $a_{i,j}$. then the entries of $A^T$ is $a_{j,i}$ and the  $(i,j)$-entry of $AA^T$ is 
+        $ \sum_{k=1}^n a_{ik} a_{kj}^T = \sum_{k=1}^n a_{ik} a_{jk} = Cov(W_i, W_j)$
+    </p>
+    <p>
+        So now we understand why $AA^T$ forms the covariance matrix, but only when we have $E[X_i] = 0$ and $Var(X_i) = 1$.
+    </p>
+
+</body>

@@ -1,0 +1,17 @@
+body {
+    background-color: rgb(253, 220, 226);
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: xx-large;
+    padding-left: 15%;
+    padding-right: 15%;
+}
+
+/* unvisited link */
+a:link {
+  color: blueviolet;
+}
+
+/* visited link */
+a:visited {
+  color: blueviolet;
+}
