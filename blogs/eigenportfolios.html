@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2FXH6NVQ8C"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-2FXH6NVQ8C');
+    </script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../styles.css">
+    <script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}};</script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>Jerry Loh</title>
+</head>
+
+<body>
+    <header>
+        <h1><a href = "../index.html">Jerry Loh</a></h1>
+    </header>
+    <h2>Trying to speed up eigenportfolio computations with the Power Iteration</h2>
+    <div><span>2022/11/30</span> | <a href = "https://github.com/jlohding/faster_eigenportfolios">Github Repository</a></div>
+    <p>
+        Eigenportfolios are a particularly salient application of linear algebra to finance: A covariance matrix of stock price returns is decomposed, and each eigenvector in the resulting 
+        orthogonal eigenbasis can be viewed as an "eigenportfolio", or a vector of weights to be assigned to stocks. 
+    </p>
+    <p>
+        So this requires us to eigendecompose a covariance matrix, and then search for the absolute largest eigenvalue, and take its associated eigenvector as the eigenportfolio. Numerically, this 
+        is usually done via some form of QR Iteration, where Householder reflections must be computed in $ O(m^3) $ time complexity. 
+    </p>
+    <p>
+        However, if we are only looking for the absolute largest eigenpair,
+        then we can instead apply Power Iteration to the covariance matrix, allowing us to compute an eigenportfolio faster. In this project, I compare the speed advantage of this approach against applying 
+        <code>np.linalg.eigh()</code> on the covariance matrix.
+    </p>
+    
+</body>
