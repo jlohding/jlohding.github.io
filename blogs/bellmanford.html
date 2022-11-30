@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2FXH6NVQ8C"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-2FXH6NVQ8C');
+    </script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../styles.css">
+    <script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}};</script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>Jerry Loh</title>
+</head>
+
+<body>
+    <header>
+        <h1><a href = "../index.html">Jerry Loh</a></h1>
+    </header>
+    <h2>Bellman-Ford for currency arbitrage detection</h2>
+    <div><span>2022/12/01</span> | <a href = "https://github.com/jlohding/bellmanford_arb">Github Repository</a></div>
+    <p>
+        I recently <a href = "https://www.thealgorists.com/Algo/ShortestPaths/Arbitrage">found</a> 
+        an interesting application of the Bellman-Ford single-source-shortest-path algorithm in finance. The idea is simple: Given some (time series) bid/ask data on 
+        different currency exchange rates, we can model each currency/asset as vertices, and exchange rates as edges in a directed, complete graph. 
+    </p>
+    <p>
+        Any path from currency A to B then represents a series of trades at that point in time, and the product of all edges along that path is the final amount of currency we 
+        have, denominated in base B currency.
+    </p>
+    <p>
+        This also means that any cyclic paths in the graph that end with cost >1.0 represent a series of trades that lead to pure arbitrage profits (assuming zero transaction/slippage/latency costs).
+    </p>
+    <p>
+        However, we face two issues:
+        <ul>
+            <li>The path cost we need is multiplicative, but typical graph algorithms assume additive costs</li>
+            <li>We need to detect all cyclic paths with cost >1.0</li>
+        </ul>
+        These are solved by taking logarithms, and we can take advantage of the additive property here: $ ln(a) + ln(b) = ln(ab) $
+        <br>Also, $ ln(1) = 0 $ and $ ln(x) = 0 \: \: \forall \: (0 \lt x \lt 1) $, so if we take $ \mbox{cost} := -ln(\mbox{edge_cost}) $, we can detect arbitrage paths with 
+        negative cycle detection.
+    </p>
+    <p>
+        And so Bellman-Ford can achieve this through the usual $V$-pass negative cycle detection algorithm.
+    </p>
+</body>
