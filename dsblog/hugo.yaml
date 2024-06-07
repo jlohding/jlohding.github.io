@@ -1,0 +1,31 @@
+baseURL: https://jlohding.github.io/
+languageCode: en-us
+title: Jerry Loh
+theme: PaperMod
+
+menu:
+  main:
+    - identifier: blog
+      name: Blog
+      url: /archives/
+      weight: 1
+    - identifier: projects
+      name: Projects
+      url: /projects/
+      weight: 2
+    - identifier: cv
+      name: CV
+      url: /cv/
+      weight: 3 
+
+params:
+  homeInfoParams:
+    Title: Hi there!
+    Content: This is my technical blog where I write about my work in data science and statistics. 
+
+  socialIcons: # optional
+    - name: Github
+      url: https://github.com/jlohding
+    - name: LinkedIn
+      url: https://linkedin.com/in/jerryloh2000
+

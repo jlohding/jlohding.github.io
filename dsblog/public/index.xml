@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Jerry Loh</title>
+    <link>http://localhost:1313/</link>
+    <description>Recent content on Jerry Loh</description>
+    <generator>Hugo -- 0.127.0</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 07 Jun 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Challenges I faced building an NER system</title>
+      <link>http://localhost:1313/posts/ner/</link>
+      <pubDate>Fri, 07 Jun 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/ner/</guid>
+      <description>TBD</description>
+    </item>
+    <item>
+      <title>Reverse-mode autodiff from scratch</title>
+      <link>http://localhost:1313/posts/autodiff/</link>
+      <pubDate>Fri, 07 Jun 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/autodiff/</guid>
+      <description>We implement a simple automatic differentiation tool in Python which can compute the gradient of any (simple) multivariable function efficiently.
+Use case Understanding how autodiff works is crucial for understanding backpropagation and how optimisation works in a deep learning setting: In general, we want an easy way to compute gradients of a loss function wrt to its weights and bias parameters so that we can apply algorithms such as gradient descent.</description>
+    </item>
+    <item>
+      <title>CV</title>
+      <link>http://localhost:1313/cv/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/cv/</guid>
+      <description>My main interests involve quantitative finance, NLP, and computational statistics.
+Education Bachelor of Science (Hons) in Statistics - National University of Singapore
+Specialisation in Data Science Minor in Computer Science Experience Data Scientist Intern - Julius Baer
+Quant Researcher Intern - IMS NUS / Cubist Systematic Strategies
+Quant Analyst Intern - VI Fund Management</description>
+    </item>
+  </channel>
+</rss>
