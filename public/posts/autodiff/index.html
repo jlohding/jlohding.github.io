@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto">
 
-<head><meta charset="utf-8">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="noindex, nofollow">
 <title>Reverse-mode autodiff from scratch | Jerry Loh</title>
 <meta name="keywords" content="">
 <meta name="description" content="We implement a simple automatic differentiation tool in Python which can compute the gradient of any (simple) multivariable function efficiently.
 Use case Understanding how autodiff works is crucial for understanding backpropagation and how optimisation works in a deep learning setting: In general, we want an easy way to compute gradients of a loss function wrt to its weights and bias parameters so that we can apply algorithms such as gradient descent.">
 <meta name="author" content="">
-<link rel="canonical" href="https://jlohding.github.io/posts/autodiff/">
+<link rel="canonical" href="http://localhost:1313/posts/autodiff/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.b609c58d5c11bb90b1a54e04005d74ad1ddf22165eb79f5533967e57df9c3b50.css" integrity="sha256-tgnFjVwRu5CxpU4EAF10rR3fIhZet59VM5Z&#43;V9&#43;cO1A=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://jlohding.github.io/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://jlohding.github.io/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://jlohding.github.io/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://jlohding.github.io/apple-touch-icon.png">
-<link rel="mask-icon" href="https://jlohding.github.io/safari-pinned-tab.svg">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="https://jlohding.github.io/posts/autodiff/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/autodiff/">
 <noscript>
     <style>
         #theme-toggle,
@@ -77,71 +77,6 @@ Use case Understanding how autodiff works is crucial for understanding backpropa
 
 
 
-  
-
-<meta property="og:title" content="Reverse-mode autodiff from scratch" />
-<meta property="og:description" content="We implement a simple automatic differentiation tool in Python which can compute the gradient of any (simple) multivariable function efficiently.
-Use case Understanding how autodiff works is crucial for understanding backpropagation and how optimisation works in a deep learning setting: In general, we want an easy way to compute gradients of a loss function wrt to its weights and bias parameters so that we can apply algorithms such as gradient descent." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://jlohding.github.io/posts/autodiff/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2024-06-07T00:00:00+00:00" />
-<meta property="article:modified_time" content="2024-06-07T00:00:00+00:00" />
-
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Reverse-mode autodiff from scratch"/>
-<meta name="twitter:description" content="We implement a simple automatic differentiation tool in Python which can compute the gradient of any (simple) multivariable function efficiently.
-Use case Understanding how autodiff works is crucial for understanding backpropagation and how optimisation works in a deep learning setting: In general, we want an easy way to compute gradients of a loss function wrt to its weights and bias parameters so that we can apply algorithms such as gradient descent."/>
-
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position":  1 ,
-      "name": "Posts",
-      "item": "https://jlohding.github.io/posts/"
-    }, 
-    {
-      "@type": "ListItem",
-      "position":  2 ,
-      "name": "Reverse-mode autodiff from scratch",
-      "item": "https://jlohding.github.io/posts/autodiff/"
-    }
-  ]
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "Reverse-mode autodiff from scratch",
-  "name": "Reverse-mode autodiff from scratch",
-  "description": "We implement a simple automatic differentiation tool in Python which can compute the gradient of any (simple) multivariable function efficiently.\nUse case Understanding how autodiff works is crucial for understanding backpropagation and how optimisation works in a deep learning setting: In general, we want an easy way to compute gradients of a loss function wrt to its weights and bias parameters so that we can apply algorithms such as gradient descent.",
-  "keywords": [
-    
-  ],
-  "articleBody": "We implement a simple automatic differentiation tool in Python which can compute the gradient of any (simple) multivariable function efficiently.\nUse case Understanding how autodiff works is crucial for understanding backpropagation and how optimisation works in a deep learning setting: In general, we want an easy way to compute gradients of a loss function wrt to its weights and bias parameters so that we can apply algorithms such as gradient descent.\nIn a typical ML optimisation setting, we have some loss function $L$, parameters $W$ and learning rate $\\eta$:\n\\begin{equation} W_{k+1} = W_k - \\eta \\frac{dL}{dW} \\end{equation}\nIn practice, we rely on automatic differentiation libraries such as JAX to handle this, but it is useful to understand the underlying logic behind this.\nBackpropagation Calculus The fundamental idea behind autodiff is to represent a function’s expression in a directed acyclic graph, where nodes represent variables and edges represent partial derivatives from mathematical operations like addition, multiplication, exp, log, etc.\nConsider a function:\n\\begin{equation} L(x,y) = x \\times y = (a-b) \\times (b+1) \\end{equation}\nWe can represent this as a computational graph as follows: Using the chain rule, we can multiply partial derivatives to obtain the derivative of $L$ wrt to any variable: This is the foundation of backpropagation.\n$$ \\frac{dL}{da} = \\frac{dL}{dx} \\frac{dx}{da} = y \\cdot 1 $$\nImplementation With this understanding, it is simple to implement this idea in code. We first define a Variable class which stores its own value, as well as pointers to its child nodes and its respective local derivatives.\nclass Variable: def __init__(self, val, children=(), local_gradients=()): self.val = val self.children = children self.local_gradients = local_gradients self.name = \"\" def set_name(self, name) -\u003e None: self.name = name We also need to polymorph the object’s basic mathematical operations like addition to return another Variable object, while storing local derivatives. For instance, we override the addition behaviour as such:\nclass Variable: ... def __add__(self, other: Variable) -\u003e Variable: out = Variable( val = self.val + other.val, children = (self, other), local_gradients = ( (self, 1), (other, 1), ) ).set_name(f\"{self.name} + {other.name}\") return out Training a neural network Let’s test our autodiff implementation by training a neural network from scratch. We simulate 100 samples of input and output data from a Unif(0,1) distribution, and use MSE as our loss function: $$ L(\\hat{y}, y) = \\frac{1}{n} \\sum^n_{i=1} (\\hat{y} - y)^2 $$\n$$ X \\in \\mathbb{R}^{100,50}, y \\in \\mathbb{R}^{100} $$\nFor simplicity, we use a single hidden layer, and our network is defined as: $$ W \\in \\mathbb{R}^{50,1}, b \\in \\mathbb{R}^{100} $$ $$ \\hat{y} = XW + b $$\nWe also use standard gradient descent, and we have 51 parameters to optimise: $$ W_{ij}^{(k+1)} = W_{ij}^{(k)} - \\eta \\frac{dL}{dW_{ij}} $$ $$ b_{i}^{(k+1)} = b_{i}^{(k)} - \\eta \\frac{dL}{db_{i}} $$\nThe below figure shows the loss decreasing over epochs, indicating that our gradient computations are indeed correct.\nConclusions We have successfully implemented simple automatic differentiation from scratch by representing variables in an expression tree. While the concept seems trivial, it is pretty key to understanding how optimisation in machine learning works.\n",
-  "wordCount" : "508",
-  "inLanguage": "en",
-  "datePublished": "2024-06-07T00:00:00Z",
-  "dateModified": "2024-06-07T00:00:00Z",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://jlohding.github.io/posts/autodiff/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Jerry Loh",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://jlohding.github.io/favicon.ico"
-    }
-  }
-}
-</script>
 </head>
 
 <body class="" id="top">
@@ -159,7 +94,7 @@ Use case Understanding how autodiff works is crucial for understanding backpropa
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://jlohding.github.io/" accesskey="h" title="Jerry Loh (Alt + H)">Jerry Loh</a>
+            <a href="http://localhost:1313/" accesskey="h" title="Jerry Loh (Alt + H)">Jerry Loh</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -185,17 +120,17 @@ Use case Understanding how autodiff works is crucial for understanding backpropa
         </div>
         <ul id="menu">
             <li>
-                <a href="https://jlohding.github.io/archives/" title="Blog">
+                <a href="http://localhost:1313/archives/" title="Blog">
                     <span>Blog</span>
                 </a>
             </li>
             <li>
-                <a href="https://jlohding.github.io/projects/" title="Projects">
+                <a href="http://localhost:1313/projects/" title="Projects">
                     <span>Projects</span>
                 </a>
             </li>
             <li>
-                <a href="https://jlohding.github.io/cv/" title="CV">
+                <a href="http://localhost:1313/cv/" title="CV">
                     <span>CV</span>
                 </a>
             </li>
@@ -318,7 +253,7 @@ works.</p>
     </main>
     
 <footer class="footer">
-        <span>&copy; 2024 <a href="https://jlohding.github.io/">Jerry Loh</a></span> · 
+        <span>&copy; 2024 <a href="http://localhost:1313/">Jerry Loh</a></span> · 
 
     <span>
         Powered by

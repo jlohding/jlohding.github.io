@@ -2,24 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://jlohding.github.io/posts/ner/</loc>
+    <loc>http://localhost:1313/posts/crossword/</loc>
+    <lastmod>2024-06-15T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/</loc>
+    <lastmod>2024-06-15T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/</loc>
+    <lastmod>2024-06-15T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/autodiff/</loc>
     <lastmod>2024-06-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://jlohding.github.io/</loc>
-    <lastmod>2024-06-07T00:00:00+00:00</lastmod>
+    <loc>http://localhost:1313/archives/</loc>
   </url><url>
-    <loc>https://jlohding.github.io/posts/</loc>
-    <lastmod>2024-06-07T00:00:00+00:00</lastmod>
+    <loc>http://localhost:1313/categories/</loc>
   </url><url>
-    <loc>https://jlohding.github.io/posts/autodiff/</loc>
-    <lastmod>2024-06-07T00:00:00+00:00</lastmod>
+    <loc>http://localhost:1313/cv/</loc>
   </url><url>
-    <loc>https://jlohding.github.io/archives/</loc>
+    <loc>http://localhost:1313/projects/</loc>
   </url><url>
-    <loc>https://jlohding.github.io/categories/</loc>
-  </url><url>
-    <loc>https://jlohding.github.io/cv/</loc>
-  </url><url>
-    <loc>https://jlohding.github.io/tags/</loc>
+    <loc>http://localhost:1313/tags/</loc>
   </url>
 </urlset>
