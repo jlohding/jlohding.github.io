@@ -31,17 +31,15 @@ Use case Understanding how autodiff works is crucial for understanding backpropa
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/cv/</guid>
       <description>My main interests involve quantitative finance, NLP, and computational statistics.
-Education Bachelor of Science (Hons) in Statistics - National University of Singapore
-Specialisation in Data Science Minor in Computer Science Experience Data Scientist Intern - Julius Baer
-Quant Researcher Intern - IMS NUS / Cubist Systematic Strategies
-Quant Analyst Intern - VI Fund Management</description>
+Contact me: jloh @ u dot nus dot edu
+Education National University of Singapore | Aug 2021 - Jan 2025 Bachelor of Science (Hons) in Statistics Specialisation in Data Science Minor in Computer Science Experience Data Scientist Intern - Julius Baer Quant Researcher Intern - Cubist Systematic Strategies / IMS NUS Quant Analyst Intern - VI Fund Management Other Experience Data Scientist - Better.</description>
     </item>
     <item>
       <title>Projects</title>
       <link>http://localhost:1313/projects/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/projects/</guid>
-      <description> xword: Automatic crossword puzzle generation via LLM Agents pySEC: SEC API client and webscraper for 8-K filings ftm-hack: No-code platform to manage and deploy chatbots for e-commerce more soon </description>
+      <description> xword: Automatic crossword puzzle generation via LLM Agents jlohding/sp500-edgar-10k: Parsed 10-K filings for SP500 historical constituents pySEC: SEC API client and webscraper for 8-K filings more soon </description>
     </item>
   </channel>
 </rss>
