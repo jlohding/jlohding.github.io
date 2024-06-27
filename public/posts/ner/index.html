@@ -5,9 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>Challenges I faced building an NER system | Jerry Loh</title>
+<title>Relevance-aware entity extraction for financial news | Jerry Loh</title>
 <meta name="keywords" content="">
-<meta name="description" content="TBD">
+<meta name="description" content="In this post, I will detail how I tackled the problem of building a context and relevance-aware NER system for financial news entity detection.
+The problem We are tasked to build a model to extract company names from financial news, but only if the companies are directly relevant to the news article.
+For instance, consider a random financial news article about weight-loss drug companies like Novo Nordisk: While the article also mentions big tech companies like Nvidia and Apple, they are not relevant to the story, and ideally should not be extracted.">
 <meta name="author" content="">
 <link rel="canonical" href="http://localhost:1313/posts/ner/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.b609c58d5c11bb90b1a54e04005d74ad1ddf22165eb79f5533967e57df9c3b50.css" integrity="sha256-tgnFjVwRu5CxpU4EAF10rR3fIhZet59VM5Z&#43;V9&#43;cO1A=" rel="preload stylesheet" as="style">
@@ -142,13 +144,113 @@
   <header class="post-header">
     
     <h1 class="post-title entry-hint-parent">
-      Challenges I faced building an NER system
+      Relevance-aware entity extraction for financial news
     </h1>
-    <div class="post-meta"><span title='2024-06-07 00:00:00 +0000 UTC'>June 7, 2024</span>
+    <div class="post-meta"><span title='2024-06-26 00:00:00 +0000 UTC'>June 26, 2024</span>
 
 </div>
   </header> 
-  <div class="post-content"><p>TBD</p>
+  <div class="post-content"><p>In this post, I will detail how I tackled the problem of building a context and relevance-aware NER system for financial news entity detection.</p>
+<h2 id="the-problem">The problem<a hidden class="anchor" aria-hidden="true" href="#the-problem">#</a></h2>
+<p>We are tasked to build a model to extract company names from financial news, but only if the companies are directly relevant to the news article.</p>
+<p>For instance, consider a random financial news article about weight-loss drug companies like <code>Novo Nordisk</code>: While the article also mentions big tech companies like <code>Nvidia</code> and <code>Apple</code>, they are not relevant to the story, and ideally should not be extracted.</p>
+<p><img loading="lazy" src="/img/NER_Model.jpg#center" alt="NER showcase"  />
+</p>
+<p>However, applying a pretrained NER model like <a href="https://huggingface.co/dslim/bert-base-NER">NER-BERT</a> extracts all entities from text, regardless of whether the entity is relevant to the story or not. This presents us our first problem: Entity recognition models are trained mainly to extract all entities without awareness of document meaning. One possible solution is to finetune a pretrained NER model on financial news, but the task we need (relevance classification of entities) is fundamentally different.</p>
+<p>We also encountered a second problem while attempting to solve this problem: Often times, the names of companies relevant are mentioned multiple times in one news, but differently. As typical entity detection models only return classifications for each token in the text, we would get multiple extracted results for what is actually just one entity. For example, consider the following example from CNBC news:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Broadcom (AVGO) CEO expects AI windfall even as sales growth slows:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Broadcom Inc., a chip supplier for Apple Inc. and other big tech companies,
+</span></span><span style="display:flex;"><span>expects the rapid expansion of artificial intelligence computing 
+</span></span><span style="display:flex;"><span>to help offset its worst slowdown since 2020...
+</span></span></code></pre></div><p>In this example, the pretrained NER model picked up the stock ticker <code>AVGO</code>, <code>Broadcom</code> and <code>Broadcom Inc.</code> as separate entities. Our solution was to use a finetuned LLM (FLAN-T5) to handle all the entity resolution logic, picking out the required companies, and then feeding our results into a classifier (CrossEncoder) to determine each entity&rsquo;s relevance.</p>
+<p>Using our two-stage approach, we are able to successfully detect and score the relvance of companies for each financial news. As seen from the figure above, we extract <code>Novo Nordisk</code> as the only relevant entity to the news.</p>
+<h2 id="training-the-relevancy-model">Training the relevancy model<a hidden class="anchor" aria-hidden="true" href="#training-the-relevancy-model">#</a></h2>
+<p>In order to build a relevance classifier for entities to news, we use a proprietary dataset with human-labelled relevance scores for financial news, like so:</p>
+<table>
+<thead>
+<tr>
+<th>News</th>
+<th>Entities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>news1</td>
+<td>[(Apple Inc, 0.9), (Microsoft Corp, 0.65), &hellip;]</td>
+</tr>
+<tr>
+<td>news2</td>
+<td>[(AMD Corp, 0.85), (JP Morgan, 0.35), &hellip;]</td>
+</tr>
+</tbody>
+</table>
+<p>We explode the entity column as:</p>
+<table>
+<thead>
+<tr>
+<th>News</th>
+<th>Entity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>news1</td>
+<td>(Apple Inc, 0.9)</td>
+</tr>
+<tr>
+<td>news1</td>
+<td>(Microsoft Corp, 0.65)</td>
+</tr>
+<tr>
+<td>news2</td>
+<td>(AMD Corp, 0.85)</td>
+</tr>
+<tr>
+<td>news2</td>
+<td>(JP Morgan, 0.35)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="model-1-bi-encoder-embeddings">Model 1: Bi-encoder embeddings<a hidden class="anchor" aria-hidden="true" href="#model-1-bi-encoder-embeddings">#</a></h3>
+<p>Our first idea was to finetune a SentenceBERT embedding model to be able to produce separate embeddings for document and entities, and define our loss function using the cosine similarity between each pair of news and entity embeddings.</p>
+<h3 id="model-2-cross-encoder-classifier">Model 2: Cross-encoder classifier<a hidden class="anchor" aria-hidden="true" href="#model-2-cross-encoder-classifier">#</a></h3>
+<p>The second model was to use a question-and-answer model pretrained on MS Marco, and finetune it to take in each pair of <code>&lt;news, entity&gt;</code> as query and answer for input. Ultimately, this produced slightly better results, and we went with this.</p>
+<p><img loading="lazy" src="/img/encoderdiff.png" alt="Model comparisons"  />
+</p>
+<p><strong>Results:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Accuracy</th>
+<th>Precision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bi-encoder (base)</td>
+<td>0.711</td>
+<td>0.767</td>
+</tr>
+<tr>
+<td>bi-encoder (finetuned)</td>
+<td>0.814</td>
+<td>0.87</td>
+</tr>
+<tr>
+<td>cross-encoder (base)</td>
+<td>0.657</td>
+<td>0.759</td>
+</tr>
+<tr>
+<td>cross-encoder (finetuned)</td>
+<td>0.86</td>
+<td>0.91</td>
+</tr>
+</tbody>
+</table>
+<h2 id="to-be-continued">To be continued&hellip;<a hidden class="anchor" aria-hidden="true" href="#to-be-continued">#</a></h2>
 
 
   </div>
